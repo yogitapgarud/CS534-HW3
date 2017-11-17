@@ -16,31 +16,40 @@ def mle(filename): # Max Likelihood Estimation of HMM
     ttfreq = defaultdict(lambda : defaultdict(int)) 
     tagfreq = defaultdict(int)    
     dictionary = defaultdict(set)
+    phixy = defaultdict(int)
 
     for words, tags in readfile(filename):
+        count = 0
         last = startsym
         tagfreq[last] += 1
+        phixy[count, last, "DT"] = 1
+
         for word, tag in zip(words, tags) + [(stopsym, stopsym)]:
             #if tag == "VBP": tag = "VB" # +1 smoothing
             twfreq[tag][word] += 1            
             ttfreq[last][tag] += 1
             dictionary[word].add(tag)
             tagfreq[tag] += 1
-            last = tag            
-    
+            #last = tag            
+            phixy[count, word, tag] += 1
+            phixy[count, last, tag] += 1
+            last = tag
+        count += 1
+
     model = defaultdict(float)
     num_tags = len(tagfreq)
-    for tag, freq in tagfreq.iteritems(): 
-        logfreq = log(freq)
-        for word, f in twfreq[tag].iteritems():
-            model[tag, word] = log(f) - logfreq 
-        logfreq2 = log(freq + num_tags)
-        for t in tagfreq: # all tags
-            model[tag, t] = log(ttfreq[tag][t] + 1) - logfreq2 # +1 smoothing
+
+    #for tag, freq in tagfreq.iteritems(): 
+    #    logfreq = log(freq)
+    #    for word, f in twfreq[tag].iteritems():
+    #        model[tag, word] = log(f) - logfreq 
+    #    logfreq2 = log(freq + num_tags)
+    #    for t in tagfreq: # all tags
+    #        model[tag, t] = log(ttfreq[tag][t] + 1) - logfreq2 # +1 smoothing
     
     #print "model len : ", len(model), "len dictionary : ", len(dictionary)
     #print(dictionary)     
-    return dictionary, model
+    return dictionary, model, phixy
 
 def decode(words, dictionary, model):
 
@@ -56,6 +65,7 @@ def decode(words, dictionary, model):
     back = defaultdict(dict)
 
     #print " ".join("%s/%s" % wordtag for wordtag in zip(words,tags)[1:-1])
+
     for i, word in enumerate(words[1:], 1):
         for tag in dictionary[word]:
             for prev in best[i-1]:
@@ -63,9 +73,11 @@ def decode(words, dictionary, model):
                 if score > best[i][tag]:
                     best[i][tag] = score
                     back[i][tag] = prev
-     #   print i, word, dictionary[word], best[i]
+
+    #   print i, word, dictionary[word], best[i]
     #print best[len(words)-1][stopsym]
     mytags = backtrack(len(words)-1, stopsym)[:-1]
+    #print "mytags : ", mytags
     #print " ".join("%s/%s" % wordtag for wordtag in mywordtags)
     return mytags
 
@@ -80,9 +92,10 @@ def test(filename, dictionary, model):
     return errors/tot
         
 if __name__ == "__main__":
+
     trainfile, devfile = sys.argv[1:3]
     
-    dictionary, model = mle(trainfile)
+    dictionary, model, phixy = mle(trainfile)
                                                                              
     print "train_err {0:.2%}".format(test(trainfile, dictionary, model))
     print "dev_err {0:.2%}".format(test(devfile, dictionary, model))

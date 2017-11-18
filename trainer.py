@@ -11,33 +11,11 @@ from tagger import decodetrigram
 
 startsym, stopsym = "<s>", "</s>"
 
-def devError(dictionary, model, filename):
-
-    errorCount = 0
-    total = 0
-
-    errors = tot = 0
-
-    for words, tags in readfile(filename):
-
-        mytags = decode(words, dictionary, model)
-
-        #if tags != mytags:
-        #    errorCount += 1
-
-	errors += sum(t1!=t2 for (t1,t2) in zip(tags, mytags))
-        tot += len(words)
-
-        total += 1
-
-    return errors / tot
-
-def unavgPerceptron(dictionary, model, phi, filename):
+def unavgPerceptron(dictionary, model, phi, filename, devfile):
 
 	currentEpoch = 1
 	totalEpoch = 10  
 	errors = 0
-	#weightvector = np.zeros(len(model))
         best_dev_err = float("inf")
 
 	for currentEpoch in range(1, totalEpoch + 1):
@@ -50,29 +28,27 @@ def unavgPerceptron(dictionary, model, phi, filename):
 
                         phixz = defaultdict(int)
                         phixy = defaultdict(int)
-		        mytags = decode(words, dictionary ,model)
+		        mytags = decode(words, dictionary, model)
                         #print mytags
                         last = 'DT'
                         phixz[startsym, last] = 1
 
-                        for word, tag in zip(words, mytags):
-                            phixz[word, tag] += 1
-                            phixz[last, tag] += 1
-                            last = tag
+                        if tags != mytags:
 
-                        last = 'DT'
-                        phixy[startsym, last] += 1
+				for word, tag in zip(words, mytags):
+	                            phixz[word, tag] += 1
+	                            phixz[last, tag] += 1
+	                            last = tag
 
-                        for word, tag in zip(words, tags):
-                            phixy[word, tag] += 1
-                            phixy[last, tag] += 1
-                            last = tag
+	                        last = 'DT'
+	                        phixy[startsym, last] += 1
 
-			if tags != mytags:
+	                        for word, tag in zip(words, tags):
+	                            phixy[word, tag] += 1
+	                            phixy[last, tag] += 1
+	                            last = tag
 
                                 for w, t in phixy:
-                                        #print(k)
-                                        #w, t = k
                                         #print "c: ", c, "w: ", w, "t: ", t, "k: ", k
                                         #print "phixy [ ", w, t, " ] : ", phixy[w, t]
                                         model[w, t] += phixy[w, t]
@@ -82,13 +58,12 @@ def unavgPerceptron(dictionary, model, phi, filename):
                                         model[w, t] -= phixz[w, t]
 
 				updates += 1
-                                #print "updates: ", updates
 
         		errors += sum(t1!=t2 for (t1,t2) in zip(tags, mytags))
         		tot += len(words)
                         count += 1
 
-                dev_err = devError(dictionary, model, devfile)
+                dev_err = test(devfile, dictionary, model)
                 train_err = errors / tot
                 #print(train_err)
 
@@ -96,26 +71,18 @@ def unavgPerceptron(dictionary, model, phi, filename):
                     best_dev_err = dev_err
                     #print "model : ", model
 
-                #print "dev_err {0:.2%}".format(test(devfile, dictionary, model))
-		#features = sum(1 if value != 0 for key, value in model.iteritems())
-                features= 0
+                features = sum(v != 0 for _, v in model.iteritems())
 
-                for key, values in model.iteritems():
-                    if values != 0:
-                        features += 1
-
-                #print "features: ", features
                 print("epoch {0}, updates {1}, features {2}, train_err {3:.2%}, dev_err {4:.2%}".format(currentEpoch, updates, features, train_err, dev_err))
-                #print("train_err {0:.2%} dev_err {0:.2%}".format(errors / tot * 100, dev_err))
 
 def avgPerceptron(dictionary, model, filename):
+
 	currentEpoch = 1
 	totalEpoch = 10  
-	errors = 0
-	#weightvector = np.zeros(len(model))
         best_dev_err = float("inf")
 	modelAvg = defaultdict(int)
 	countAvg = 1
+	final_model = defaultdict(int)
 
 	for currentEpoch in range(1, totalEpoch + 1):
 		
@@ -127,7 +94,7 @@ def avgPerceptron(dictionary, model, filename):
 
                         phixz = defaultdict(int)
                         phixy = defaultdict(int)
-		        mytags = decode(words, dictionary ,model)
+		        mytags = decode(words, dictionary, final_model)
                         #print mytags
                         last = 'DT'
                         phixz[startsym, last] = 1
@@ -148,35 +115,24 @@ def avgPerceptron(dictionary, model, filename):
 			if tags != mytags:
 
                                 for w, t in phixy:
-                                        #print(k)
-                                        #w, t = k
-                                        #print "c: ", c, "w: ", w, "t: ", t, "k: ", k
-                                        #print "phixy [ ", w, t, " ] : ", phixy[w, t]
                                         model[w, t] += phixy[w, t]
 					modelAvg[w, t] += countAvg * phixy[w, t]
 
                                 for w, t in phixz:
-                                        	#print "phixz", w, t, ": ", phixz[w, t]
                                         model[w, t] -= phixz[w, t]
 					modelAvg[w, t] -= countAvg * phixz[w, t]
 
 				updates += 1
-                                #print "updates: ", updates
 
 			countAvg += 1
         		errors += sum(t1!=t2 for (t1,t2) in zip(tags, mytags))
         		tot += len(words)
-                        count += 1
-
-		#final_model = model - modelAvg / count
-                #final_model = for w, t in model return model[w, t] - modelAvg[w, t] / countAvg
-                final_model = defaultdict(int)
+                        count += 1                
 
                 for w, t in model:
                     final_model[w, t] = model[w, t] - modelAvg[w, t] / countAvg
-                    
 
-                dev_err = devError(dictionary, final_model, devfile)
+                dev_err = test(devfile, dictionary, final_model)
                 train_err = errors / tot
                 #print(train_err)
 
@@ -184,15 +140,12 @@ def avgPerceptron(dictionary, model, filename):
                     best_dev_err = dev_err
                     #print "model : ", model
 
-                #print "dev_err {0:.2%}".format(test(devfile, dictionary, model))
-		#features = sum(1 if value != 0 for key, value in model.iteritems())
-                features= 0
+                features = sum(v != 0 for _, v in final_model.iteritems())
 
-                for key, values in model.iteritems():
-                    if values != 0:
-                        features += 1
+                #for key, values in model.iteritems():
+                #    if values != 0:
+                #        features += 1
 
-                #print "features: ", features
                 print("epoch {0}, updates {1}, features {2}, train_err {3:.2%}, dev_err {4:.2%}".format(currentEpoch, updates, features, train_err, dev_err))
                 #print("train_err {0:.2%} dev_err {0:.2%}".format(errors / tot * 100, dev_err))
 
@@ -200,13 +153,12 @@ def avgPerceptronFeatures(dictionary, model, filename):
 	currentEpoch = 1
 	totalEpoch = 10  
 	errors = 0
-	#weightvector = np.zeros(len(model))
         best_dev_err = float("inf")
 	modelAvg = defaultdict(int)
 	countAvg = 1
-
-	phixy, phixz = genfeatures(trainfile)
-
+	final_model = defaultdict(int)
+	phixy = genfeatures(trainfile)
+	
 	for currentEpoch in range(1, totalEpoch + 1):
 		
 		errors = tot = 0
@@ -215,15 +167,36 @@ def avgPerceptronFeatures(dictionary, model, filename):
 
     		for words, tags in readfile(filename):
 
-                        mytags = decodetrigram(words, dictionary ,model)
+			phixz = defaultdict(int)
+                        mytags = decodetrigram(words, dictionary , final_model)
 
 			if tags != mytags:
+
+				last = 'DT'
+                        	#phixz[startsym, last] = 1
+
+				count = 1
+
+		                for word, tag in zip(words, mytags):
+
+					if count == 1:
+						phixz[last, word, tag] += 1
+						tagprev2 = last
+						last = tag
+						
+					else:	
+						#f.write
+						phixz[tagprev2, last, tag] += 1
+						phixz[last, word, tag] += 1
+						tagprev2 = last
+						last = tag
+					count += 1
 
                                 for w, v in phixy[count].iteritems():
                                         model[w] += v			#phixy[count][w]
 					modelAvg[w] += countAvg * v	#phixy[count][w]
 
-                                for w, v in phixz[count].iteritems():
+                                for w, v in phixz.iteritems():
                                         	#print "phixz", w, t, ": ", phixz[w, t]
                                         model[w] -= v			#phixz[count][w]
 					modelAvg[w] -= countAvg * v	#phixz[count][w]
@@ -236,30 +209,30 @@ def avgPerceptronFeatures(dictionary, model, filename):
         		tot += len(words)
                         count += 1
 
-		#final_model = model - modelAvg / count
-                #final_model = for w, t in model return model[w, t] - modelAvg[w, t] / countAvg
-                final_model = defaultdict(int)
-
                 for w in model:
                     final_model[w] = model[w] - modelAvg[w] / countAvg        
 
-                dev_err = devError(dictionary, final_model, devfile)
+                #dev_err = test(devfile, dictionary, final_model)
+
+		
+
                 train_err = errors / tot
                 #print(train_err)
+
+		errors = tot = 0
+		for words, tags in readfile(devfile):
+			mytags = decode(words, dictionary , final_model)
+			errors += sum(t1!=t2 for (t1,t2) in zip(tags, mytags))
+			tot += len(words) 
+        
+		dev_err = errors / tot
 
                 if dev_err < best_dev_err:
                     best_dev_err = dev_err
                     #print "model : ", model
 
-                #print "dev_err {0:.2%}".format(test(devfile, dictionary, model))
-		#features = sum(1 if value != 0 for key, value in model.iteritems())
-                features= 0
+                features = sum(v != 0 for _, v in final_model.iteritems())
 
-                for key, values in model.iteritems():
-                    if values != 0:
-                        features += 1
-
-                #print "features: ", features
                 print("epoch {0}, updates {1}, features {2}, train_err {3:.2%}, dev_err {4:.2%}".format(currentEpoch, updates, features, train_err, dev_err))
                 #print("train_err {0:.2%} dev_err {0:.2%}".format(errors / tot * 100, dev_err))
 
@@ -310,7 +283,7 @@ def genfeatures(filename):
 					last = tag
 				count += 1
 
-	return phixy, phixz
+	return phixy
 
 if __name__ == "__main__":
 
@@ -319,7 +292,7 @@ if __name__ == "__main__":
 	dictionary, model, phi = mle(trainfile)
 
 	print "Unaveraged structured Perceptron: "
-	unavgPerceptron(dictionary, model, phi, trainfile)
+	unavgPerceptron(dictionary, model, phi, trainfile, devfile)
 
 	print "Averaged structured Perceptron:"
 	avgPerceptron(dictionary, model, trainfile)

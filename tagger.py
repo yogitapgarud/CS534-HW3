@@ -69,7 +69,9 @@ def decode(words, dictionary, model):
 
     for i, word in enumerate(words[1:], 1):
         for tag in dictionary[word]:
+            #print "tag ", tag, "for", word
             for prev in best[i-1]:
+		#print "prev : ", prev, "i - 1 : ", i - 1
                 score = best[i-1][prev] + model[prev, tag] + model[tag, word]
                 if score > best[i][tag]:
                     best[i][tag] = score
@@ -94,16 +96,21 @@ def decodetrigram(words, dictionary, model):
     best = defaultdict(lambda: defaultdict(lambda: float("-inf")))
     best[0][startsym] = 1
 
+    back = defaultdict(dict)
+
     for tag in dictionary[words[1]]:
 	best[1][tag] = 1
-
-    back = defaultdict(dict)
+	back[1][tag] = startsym
+    
 
     #print " ".join("%s/%s" % wordtag for wordtag in zip(words,tags)[1:-1])
 
+    #print "sentence : ", words
     for i, word in enumerate(words[2:], 2):
         for tag in dictionary[word]:
+            #print "tag ", tag, "for", word
             for prev in best[i-1]:
+		#print "prev : ", prev, "i - 1 : ", i - 1
 		for lasttolast in best[i-2]:
 			
 		        score = best[i-1][prev] + best[i-2][lasttolast] + model[lasttolast, prev, tag] + model[lasttolast, word, tag]

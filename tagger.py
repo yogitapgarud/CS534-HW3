@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#git #!/usr/bin/env python
 
 from __future__ import division
 from collections import defaultdict
@@ -17,12 +17,13 @@ def mle(filename): # Max Likelihood Estimation of HMM
     tagfreq = defaultdict(int)    
     dictionary = defaultdict(set)
     phixy = defaultdict(int)
+    count = 0
 
     for words, tags in readfile(filename):
-        count = 0
+        
         last = startsym
         tagfreq[last] += 1
-        phixy[count, last, "DT"] = 1
+        phixy[count, last, 'DT'] = 1
 
         for word, tag in zip(words, tags) + [(stopsym, stopsym)]:
             #if tag == "VBP": tag = "VB" # +1 smoothing
@@ -73,6 +74,43 @@ def decode(words, dictionary, model):
                 if score > best[i][tag]:
                     best[i][tag] = score
                     back[i][tag] = prev
+
+    #   print i, word, dictionary[word], best[i]
+    #print best[len(words)-1][stopsym]
+    mytags = backtrack(len(words)-1, stopsym)[:-1]
+    #print "mytags : ", mytags
+    #print " ".join("%s/%s" % wordtag for wordtag in mywordtags)
+    return mytags
+
+def decodetrigram(words, dictionary, model):
+
+    def backtrack(i, tag):
+        if i == 0:
+            return []
+        return backtrack(i-1, back[i][tag]) + [tag]
+
+    words = [startsym] + words + [stopsym]
+
+    best = defaultdict(lambda: defaultdict(lambda: float("-inf")))
+    best[0][startsym] = 1
+
+    for tag in dictionary[words[1]]:
+	best[1][tag] = 1
+
+    back = defaultdict(dict)
+
+    #print " ".join("%s/%s" % wordtag for wordtag in zip(words,tags)[1:-1])
+
+    for i, word in enumerate(words[2:], 2):
+        for tag in dictionary[word]:
+            for prev in best[i-1]:
+		for lasttolast in best[i-2]:
+			
+		        score = best[i-1][prev] + best[i-2][lasttolast] + model[lasttolast, prev, tag] + model[lasttolast, word, tag]
+
+		        if score > best[i][tag]:
+		            best[i][tag] = score
+		            back[i][tag] = prev
 
     #   print i, word, dictionary[word], best[i]
     #print best[len(words)-1][stopsym]

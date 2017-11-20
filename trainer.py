@@ -12,14 +12,14 @@ from mydict import myDefaultdict
 
 startsym, stopsym = "<s>", "</s>"
 
-def unavgPerceptron(dictionary, filename, devfile, totalEpoch = 10):
+def unavgPerceptron(dictionary, model, filename, devfile, totalEpoch = 10):
 
 	currentEpoch = 1
         best_dev_err = float("inf")
 	final_model = defaultdict(int)
 	trainset = list(readfile(trainfile))
 	total = sum(map(lambda (x, y): len(x), trainset))
-	model = defaultdict(float)
+	#model = defaultdict(float)
 
 	for currentEpoch in range(1, totalEpoch + 1):
 		
@@ -81,13 +81,13 @@ def unavgPerceptron(dictionary, filename, devfile, totalEpoch = 10):
                 print "epoch %d, updates %d, |W| = %d, train_err %.2f%%, dev_err %.2f%%" % (currentEpoch, updates, features, train_err * 100, dev_err * 100)
                 #print("train_err {0:.2%} dev_err {0:.2%}".format(errors / tot * 100, dev_err))
 
-def avgPerceptron(dictionary, trainfile, devfile, totalEpoch = 10 ):
+def avgPerceptron(dictionary, model, trainfile, devfile, totalEpoch = 10 ):
 
 	currentEpoch = 1
         best_dev_err = float("inf")
 	modelAvg = defaultdict(float)
 	countAvg = 1
-	model = defaultdict(float)
+	#model = defaultdict(float)
 	final_model = defaultdict(float)
 	trainset = list(readfile(trainfile))
 	total = sum(map(lambda (x, y): len(x), trainset))
@@ -140,7 +140,8 @@ def avgPerceptron(dictionary, trainfile, devfile, totalEpoch = 10 ):
                 for w, t in model:
                     final_model[w, t] = model[w, t] - modelAvg[w, t] / countAvg
 
-                dev_err = test(devfile, dictionary, final_model)
+                dev_err = test(devfile, dictionary, model)
+                avg_dev_err = test(devfile, dictionary, final_model)
                 train_err = errors / total
 
                 if dev_err < best_dev_err:
@@ -149,7 +150,7 @@ def avgPerceptron(dictionary, trainfile, devfile, totalEpoch = 10 ):
 
                 features = sum(v != 0 for _, v in final_model.iteritems())
 
-                print "epoch %d, updates %d, |W| = %d, train_err %.2f%%, dev_err %.2f%%" % (currentEpoch, updates, features, train_err * 100, dev_err * 100)
+                print "epoch %d, updates %d, |W| = %d, train_err %.2f%%, dev_err %.2f%%, avg_dev_err %.2f%%" % (currentEpoch, updates, features, train_err * 100, dev_err * 100, avg_dev_err * 100)
 
 def avgPerceptronTrigramFeatures(dictionary, trainfile, devfile, totalEpoch = 10):
 
@@ -358,10 +359,10 @@ if __name__ == "__main__":
 	dictionary, model, phi = mle(trainfile)
 
 	print "Unaveraged structured Perceptron: "
-	unavgPerceptron(dictionary, trainfile, devfile)
+	unavgPerceptron(dictionary, model, trainfile, devfile)
 
 	print "Averaged structured Perceptron:"
-	avgPerceptron(dictionary, trainfile, devfile)
+	avgPerceptron(dictionary, model, trainfile, devfile)
 
 	print "Averaged structured Perceptron with Trigram t-2 t-1 t0:"
 	avgPerceptronTrigramFeatures(dictionary, trainfile, devfile)

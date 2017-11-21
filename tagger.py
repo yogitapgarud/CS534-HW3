@@ -91,10 +91,10 @@ def decodetrigram(words, dictionary, model):
             return []
         return backtrack(i-1, back[i][tag]) + [tag]
 
-    words = [startsym] + words + [stopsym]
+    words = [startsym] + [startsym] + words + [stopsym]
 
     best = defaultdict(lambda: defaultdict(lambda: float("-inf")))
-    best[0][startsym] = 1
+    best[0][startsym][startsym] = 1
 
     back = defaultdict(dict)
 
@@ -113,7 +113,7 @@ def decodetrigram(words, dictionary, model):
 		#print "prev : ", prev, "i - 1 : ", i - 1
 		for lasttolast in best[i-2]:
 			
-		        score = best[i-1][prev] + best[i-2][lasttolast] + model[lasttolast, prev, tag] + model[lasttolast, word, tag]
+		        score = best[i-1][prev] + best[i-2][lasttolast] + model[lasttolast, prev, tag] + model[lasttolast, tag, word]
 
 		        if score > best[i][tag]:
 		            best[i][tag] = score

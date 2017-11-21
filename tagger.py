@@ -40,17 +40,48 @@ def mle(filename): # Max Likelihood Estimation of HMM
     model = defaultdict(float)
     num_tags = len(tagfreq)
 
-    #for tag, freq in tagfreq.iteritems(): 
-    #    logfreq = log(freq)
-    #    for word, f in twfreq[tag].iteritems():
-    #        model[tag, word] = log(f) - logfreq 
-    #    logfreq2 = log(freq + num_tags)
-    #    for t in tagfreq: # all tags
-    #        model[tag, t] = log(ttfreq[tag][t] + 1) - logfreq2 # +1 smoothing
+    for tag, freq in tagfreq.iteritems(): 
+        logfreq = log(freq)
+        for word, f in twfreq[tag].iteritems():
+            model[tag, word] = log(f) - logfreq 
+        logfreq2 = log(freq + num_tags)
+        for t in tagfreq: # all tags
+            model[tag, t] = log(ttfreq[tag][t] + 1) - logfreq2 # +1 smoothing
     
     #print "model len : ", len(model), "len dictionary : ", len(dictionary)
     #print(dictionary)     
     return dictionary, model, phixy
+
+def mleTrigram(filename):
+
+    tttfreq = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+    ttwfreq = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+    twfreq = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+    dictionary = defaultdict(set)
+    tagtagfreq = defaultdict(lambda: defaultdict(int)) 
+
+    for words, tags in readfile(filename):
+
+        lasttolast = startsym
+        last = startsym
+        tagtagfreq[startsym][startsym] += 1
+
+        for word, tag in zip(words, tags) + ([stopsym, stopsym]):
+
+            twfreq[tag][word] += 1
+            ttwfreq[last][tag][word] += 1
+            tttfreq[lasttolast][last][tag] += 1
+            dictionary[word].add(tag)
+            tagtagfreq[last][tag] += 1
+            lasttolast = last
+            last = tag
+
+    model = defaultdict(float)
+    num_tags = len(tagtagfreq)
+
+    for tag1, tag2, freq in tagtagfreq.iteritems():
+        logfreq = log(freq)
+        
 
 def decode(words, dictionary, model):
 
@@ -94,7 +125,7 @@ def decodetrigram(words, dictionary, model):
     words = [startsym] + [startsym] + words + [stopsym]
 
     best = defaultdict(lambda: defaultdict(lambda: float("-inf")))
-    best[0][startsym][startsym] = 1
+    best[0][startsym] = 1
 
     back = defaultdict(dict)
 

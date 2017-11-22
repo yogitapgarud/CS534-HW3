@@ -104,7 +104,7 @@ def decode(words, dictionary, model):
             #print "tag ", tag, "for", word
             for prev in best[i-1]:
 		#print "prev : ", prev, "i - 1 : ", i - 1
-                score = best[i-1][prev] + model[prev, tag] + model[tag, word] + model[prev, word]
+                score = best[i-1][prev] + model[prev, tag] + model[tag, word] #+ model[prev, word]
                 if score > best[i][tag]:
                     best[i][tag] = score
                     back[i][tag] = prev

@@ -17,14 +17,11 @@ def mle(filename): # Max Likelihood Estimation of HMM
     ttfreq = defaultdict(lambda : defaultdict(int)) 
     tagfreq = defaultdict(int)    
     dictionary = defaultdict(set)
-    phixy = defaultdict(int)
-    count = 0
 
     for words, tags in readfile(filename):
         
         last = startsym
         tagfreq[last] += 1
-        phixy[count, last, 'DT'] = 1
 
         for word, tag in zip(words, tags) + [(stopsym, stopsym)]:
             #if tag == "VBP": tag = "VB" # +1 smoothing
@@ -32,11 +29,7 @@ def mle(filename): # Max Likelihood Estimation of HMM
             ttfreq[last][tag] += 1
             dictionary[word].add(tag)
             tagfreq[tag] += 1
-            #last = tag            
-            phixy[count, word, tag] += 1
-            phixy[count, last, tag] += 1
             last = tag
-        count += 1
 
     model = defaultdict(float)
     num_tags = len(tagfreq)
@@ -51,7 +44,7 @@ def mle(filename): # Max Likelihood Estimation of HMM
     
     #print "model len : ", len(model), "len dictionary : ", len(dictionary)
     #print(dictionary)     
-    return dictionary, model, phixy
+    return dictionary, model
 
 def mleTrigram(filename):
 
@@ -82,7 +75,8 @@ def mleTrigram(filename):
 
     for tag1, tag2, freq in tagtagfreq.iteritems():
         logfreq = log(freq)
-        
+        for tag, word, fr in ttwfreq.iteritems():
+            model[tag, word]
 
 def decode(words, dictionary, model):
 
@@ -131,9 +125,9 @@ def decodetrigram(words, dictionary, model):
 
     back = defaultdict(dict)
 
-    for tag in dictionary[words[1]]:
-	best[1][tag] = 1
-	back[1][tag] = startsym
+    #for tag in dictionary[words[1]]:
+	#best[1][tag] = 1
+	#back[1][tag] = startsym
     
 
     #print " ".join("%s/%s" % wordtag for wordtag in zip(words,tags)[1:-1])
@@ -146,7 +140,7 @@ def decodetrigram(words, dictionary, model):
 		#print "prev : ", prev, "i - 1 : ", i - 1
 		for lasttolast in best[i-2]:
 			
-		        score = best[i-1][prev] + best[i-2][lasttolast] + model[lasttolast, prev, tag] + model[lasttolast, tag, word] + model[prev, tag] + model[tag, word]
+		        score = best[i-1][prev] + best[i-2][lasttolast]  + model[prev, tag] + model[tag, word]  + model[lasttolast, prev, tag] + model[prev, words[i-1], word] + model[prev, tag, word] 
 
 		        if score > best[i][tag]:
 		            best[i][tag] = score

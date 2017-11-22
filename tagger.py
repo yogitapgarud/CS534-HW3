@@ -4,6 +4,7 @@ from __future__ import division
 from collections import defaultdict
 import sys
 from math import log
+from mydict import myDefaultdict
 startsym, stopsym = "<s>", "</s>"
 
 def readfile(filename):
@@ -37,7 +38,7 @@ def mle(filename): # Max Likelihood Estimation of HMM
             last = tag
         count += 1
 
-    model = defaultdict(float)
+    model = myDefaultdict(float)
     num_tags = len(tagfreq)
 
     for tag, freq in tagfreq.iteritems(): 

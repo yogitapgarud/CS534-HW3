@@ -85,13 +85,13 @@ def unavgPerceptron(dictionary, model, filename, devfile, totalEpoch = 10):
 	#endTime = time.time()
 	print("UnAverage Perceptron time : ", totalTime)
 
-def avgPerceptron(dictionary, trainfile, devfile, featurefile, totalEpoch = 10 ):
+def avgPerceptron(dictionary, model, trainfile, devfile, featurefile, totalEpoch = 10):
 
 	currentEpoch = 1
         best_dev_err = float("inf")
 	modelAvg = defaultdict(float)
 	countAvg = 1
-	model = defaultdict(float)
+	#model = defaultdict(float)
 	final_model = defaultdict(float)
 	trainset = list(readfile(trainfile))
 	total = sum(map(lambda (x, y): len(x), trainset))
@@ -117,8 +117,8 @@ def avgPerceptron(dictionary, trainfile, devfile, featurefile, totalEpoch = 10 )
 
 				errorsentences += 1
 				phidelta = myDefaultdict(float)
-				model = myDefaultdict(float)
-				modelAvg = myDefaultdict(float)
+				#model = myDefaultdict(float)
+				#modelAvg = myDefaultdict(float)
 				wordseq = [startsym] + words + [stopsym]
 				tagseq = [startsym] + tags + [stopsym]
 				z = [startsym] + mytags + [stopsym]
@@ -144,15 +144,15 @@ def avgPerceptron(dictionary, trainfile, devfile, featurefile, totalEpoch = 10 )
 						phidelta[tagseq[i-1], t1] += 1
 						phidelta[z[i-1], t2] -= 1
 
-                                #for w, t in phidelta:
-                                #        model[w, t] += phidelta[w, t]
-				#	modelAvg[w, t] += countAvg * phidelta[w, t]
+                                for w, t in phidelta:
+                                        model[w, t] += phidelta[w, t]
+					modelAvg[w, t] += countAvg * phidelta[w, t]
 				
 				#print(type(model))
 				#print(type(phidelta))
 				#print(type(modelAvg))
-				model += phidelta 
-				modelAvg = modelAvg.addmult(phidelta, countAvg)
+				#model += phidelta 
+				#modelAvg = modelAvg.addmult(phidelta, countAvg)
 				
 				updates += 1
 
@@ -180,7 +180,7 @@ def avgPerceptron(dictionary, trainfile, devfile, featurefile, totalEpoch = 10 )
 	#endTime = time.time()
 	print("Average Perceptron time : ", totalTime)
 
-def avgPerceptronTrigramFeatures(dictionary, trainfile, devfile, totalEpoch = 10):
+def avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile, totalEpoch = 10):
 
 	currentEpoch = 1
 	errors = 0
@@ -229,13 +229,13 @@ def avgPerceptronTrigramFeatures(dictionary, trainfile, devfile, totalEpoch = 10
 						phidelta[tagseq[i-1], t1, w] += 1
 						phidelta[z[i-1], t2, w] -= 1
 
-						if t1 != t2 or tagseq[i-1] != z[i-1]:
+						#if t1 != t2 or tagseq[i-1] != z[i-1]:
 
-						for line in open(featurefile):
-							line = line.strip()
-						        templates = line.split("_")
-							phidelta[tagseq[i-1], t1] += 1
-							phidelta[z[i-1], t2] -= 1
+						#for line in open(featurefile):
+						#   line = line.strip()
+						#   templates = line.split("_")
+						#phidelta[tagseq[i-1], t1] += 1
+						#phidelta[z[i-1], t2] -= 1
 
 					count += 1
 
@@ -276,7 +276,7 @@ def avgPerceptronTrigramFeatures(dictionary, trainfile, devfile, totalEpoch = 10
                 print("epoch {0}, updates {1}, features {2}, train_err {3:.2%}, dev_err {4:.2%}".format(currentEpoch, updates, features, train_err, dev_err))
                 #print("train_err {0:.2%} dev_err {0:.2%}".format(errors / tot * 100, dev_err))
 
-def avgPerceptronBivariant1(dictionary, trainfile, devfile, totalEpoch = 10 ):
+def avgPerceptronBivariant1(dictionary, model, trainfile, devfile, totalEpoch = 10 ):
 
 	currentEpoch = 1
         best_dev_err = float("inf")
@@ -408,13 +408,13 @@ if __name__ == "__main__":
 	unavgPerceptron(dictionary, model, trainfile, devfile)
 
 	print "Averaged structured Perceptron:"
-	avgPerceptron(dictionary, trainfile, devfile, featurefile)
+        avgPerceptron(dictionary, model, trainfile, devfile, featurefile)
 
 	print "Averaged structured Perceptron with Trigram t-2 t-1 t0:"
-	avgPerceptronTrigramFeatures(dictionary, trainfile, devfile)
+	avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile)
 
 	print "Averaged structured Perceptron with Bigram variatn with t-1 w:"
-	avgPerceptronBivariant1(dictionary, trainfile, devfile)
+	avgPerceptronBivariant1(dictionary, model, trainfile, devfile)
 	#print "train_err {0:.2%}".format(test(trainfile, dictionary, model))
 	#print "dev_err {0:.2%}".format(test(devfile, dictionary, model))
 

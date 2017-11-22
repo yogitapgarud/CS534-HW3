@@ -125,7 +125,7 @@ def decodetrigram(words, dictionary, model):
     words = [startsym] + [startsym] + words + [stopsym]
 
     best = defaultdict(lambda: defaultdict(lambda: float("-inf")))
-    best[0][startsym] = 1
+    best[0][startsym][startsym] = 1
 
     back = defaultdict(dict)
 

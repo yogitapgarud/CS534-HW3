@@ -3,6 +3,7 @@ import numpy as np
 from collections import defaultdict
 import sys
 import time
+import matplotlib.pyplot as plt
 from math import log
 from tagger import decode
 from tagger import mle
@@ -83,6 +84,8 @@ def unavgPerceptron(dictionary, model, filename, devfile, totalEpoch = 10):
 
 	#endTime = time.time()
 	print("UnAverage Perceptron time : ", totalTime)
+	plt.plot()
+	plt.show()
 
 def avgPerceptron(dictionary, model, trainfile, devfile, featurefile, totalEpoch = 10):
 

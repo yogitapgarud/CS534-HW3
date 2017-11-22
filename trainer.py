@@ -57,11 +57,11 @@ def unavgPerceptron(dictionary, model, filename, devfile, totalEpoch = 10):
 						phidelta[tagseq[i-1], t1] += 1
 						phidelta[z[i-1], t2] -= 1
 
-                                #for w, t in phidelta:
-                                 #       model[w, t] += phidelta[w, t]
+                                for w, t in phidelta:
+                                        model[w, t] += phidelta[w, t]
 				 
 				updates += 1
-				model += phidelta 
+				#model += phidelta 
 				#modelAvg = modelAvg.addmult(phidelta, countAvg)
 
 			countAvg += 1
@@ -88,10 +88,10 @@ def avgPerceptron(dictionary, model, trainfile, devfile, featurefile, totalEpoch
 
 	currentEpoch = 1
         best_dev_err = float("inf")
-	modelAvg = myDefaultdict(float)
+	modelAvg = defaultdict(float)
 	countAvg = 1
 	#model = myDefaultdict(float)
-	print(type(model))
+	#print(type(model))
 	final_model = defaultdict(float)
 	trainset = list(readfile(trainfile))
 	total = sum(map(lambda (x, y): len(x), trainset))
@@ -105,17 +105,18 @@ def avgPerceptron(dictionary, model, trainfile, devfile, featurefile, totalEpoch
 		count = 1
 		c = 0
 
-		print(type(model))
+		#print(type(model))
     		for words, tags in readfile(trainfile):
 
 			c += 1 
                         mytags = decode(words, dictionary, final_model)
-			print(type(model))
+			#print(type(model))
+
                         if tags != mytags:
 
-				print(type(model))
+				#print(type(model))
 				errorsentences += 1
-				phidelta = myDefaultdict(float)
+				phidelta = defaultdict(float)
 				wordseq = [startsym] + words + [stopsym]
 				tagseq = [startsym] + tags + [stopsym]
 				z = [startsym] + mytags + [stopsym]
@@ -141,15 +142,15 @@ def avgPerceptron(dictionary, model, trainfile, devfile, featurefile, totalEpoch
 						phidelta[tagseq[i-1], t1] += 1
 						phidelta[z[i-1], t2] -= 1
 
-                                #for w, t in phidelta:
-                                        #model[w, t] += phidelta[w, t]
-					#modelAvg[w, t] += countAvg * phidelta[w, t]
+                                for w, t in phidelta:
+                                        model[w, t] += phidelta[w, t]
+					modelAvg[w, t] += countAvg * phidelta[w, t]
 				
 				#print(type(model))
 				#print(type(phidelta))
 				#print(type(modelAvg))
 
-				model += phidelta 
+				#model += phidelta 
 				#modelAvg = model.addmult(phidelta, countAvg)
 				
 				updates += 1

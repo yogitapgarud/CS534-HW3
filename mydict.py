@@ -1,22 +1,25 @@
 from collections import defaultdict
 
-class myDefaultdict:
+class myDefaultdict(defaultdict):
+
 	def __init__(self, datatype):
 
-		self.__mydict = defaultdict(datatype)
+		super(myDefaultdict, self).__init__(datatype)
+
+		#type(self)
+		#self.__mydict = defaultdict(datatype)
 
 	def __add__(self, other):
 
-		for w, v in other.iteritems():
-			self.__mydict[w] = self.__mydict[w] + v
-
-		return self.__mydict
+		for w in other:
+			self[w] = self[w] + other[w]
 
 	def addmult(self, other, multiplier):
 
-		for w, v in other.iteritems():
-			self.__mydict[w] = self.__mydict[w] + multiplier * v
+		print("other: ", other)
+		print("multiplier : ", multiplier)
 
-		return self.__mydict
+		#for w, v in other:
+		#	self[w] = self[w] + multiplier * other[w]
 
 

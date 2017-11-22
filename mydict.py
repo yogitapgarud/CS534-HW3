@@ -4,7 +4,7 @@ class myDefaultdict(defaultdict):
 
 	def __init__(self, datatype):
 
-		super(myDefaultdict, self).__init__(datatype)
+		super(myDefaultdict).__init__(datatype)
 
 		#type(self)
 		#self.__mydict = defaultdict(datatype)
@@ -16,10 +16,10 @@ class myDefaultdict(defaultdict):
 
 	def addmult(self, other, multiplier):
 
-		print("other: ", other)
-		print("multiplier : ", multiplier)
+		#print("other: ", other)
+		#print("multiplier : ", multiplier)
 
-		#for w, v in other:
-		#	self[w] = self[w] + multiplier * other[w]
+		for w, v in other:
+			self[w] = self[w] + multiplier * other[w]
 
 

@@ -85,17 +85,20 @@ def unavgPerceptron(dictionary, model, filename, devfile, totalEpoch = 10):
 	#endTime = time.time()
 	print("UnAverage Perceptron time : ", totalTime)
 
-def avgPerceptron(dictionary, model, trainfile, devfile, totalEpoch = 10 ):
+def avgPerceptron(dictionary, trainfile, devfile, featurefile, totalEpoch = 10 ):
 
 	currentEpoch = 1
         best_dev_err = float("inf")
 	modelAvg = defaultdict(float)
 	countAvg = 1
-	#model = defaultdict(float)
+	model = defaultdict(float)
 	final_model = defaultdict(float)
 	trainset = list(readfile(trainfile))
 	total = sum(map(lambda (x, y): len(x), trainset))
 	totalTime = 0
+
+	#model[startsym, startsym] = 1
+	#modelAvg[startsym, startsym] = 1
 
 	for currentEpoch in range(1, totalEpoch + 1):
 		
@@ -113,10 +116,20 @@ def avgPerceptron(dictionary, model, trainfile, devfile, totalEpoch = 10 ):
                         if tags != mytags:
 
 				errorsentences += 1
-				phidelta = defaultdict(float)
+				phidelta = myDefaultdict(float)
+				model = myDefaultdict(float)
+				modelAvg = myDefaultdict(float)
 				wordseq = [startsym] + words + [stopsym]
 				tagseq = [startsym] + tags + [stopsym]
 				z = [startsym] + mytags + [stopsym]
+
+				features = []
+
+				#for line in open(featurefile):
+				#	line = line.strip()
+				#        templates = line.split("_")	#map(lambda x: x.split("_"), line.split())
+				#	print("templates: ", templates)
+				        #features.add(yield [w for w,t in wordtags], [t for w,t in wordtags] # (word_seq, tag_seq) pair)
 
                                 for i, (w, t1, t2) in enumerate(zip(wordseq, tagseq, z)[1:], 1):
 
@@ -131,12 +144,15 @@ def avgPerceptron(dictionary, model, trainfile, devfile, totalEpoch = 10 ):
 						phidelta[tagseq[i-1], t1] += 1
 						phidelta[z[i-1], t2] -= 1
 
-                                for w, t in phidelta:
-                                        model[w, t] += phidelta[w, t]
-					modelAvg[w, t] += countAvg * phidelta[w, t]
-				 
-				#model += phidelta 
-				#modelAvg = modelAvg.addmult(phidelta, countAvg)
+                                #for w, t in phidelta:
+                                #        model[w, t] += phidelta[w, t]
+				#	modelAvg[w, t] += countAvg * phidelta[w, t]
+				
+				#print(type(model))
+				#print(type(phidelta))
+				#print(type(modelAvg))
+				model += phidelta 
+				modelAvg = modelAvg.addmult(phidelta, countAvg)
 				
 				updates += 1
 
@@ -184,7 +200,7 @@ def avgPerceptronTrigramFeatures(dictionary, trainfile, devfile, totalEpoch = 10
 
     		for words, tags in readfile(trainfile):
 
-			mytags = decodetrigram(words, dictionary , final_model)
+			mytags = decode(words, dictionary , final_model)
 
 			if tags != mytags:
 
@@ -212,6 +228,15 @@ def avgPerceptronTrigramFeatures(dictionary, trainfile, devfile, totalEpoch = 10
 						phidelta[z[i-2], z[i-1], t2] -= 1
 						phidelta[tagseq[i-1], t1, w] += 1
 						phidelta[z[i-1], t2, w] -= 1
+
+						if t1 != t2 or tagseq[i-1] != z[i-1]:
+
+						for line in open(featurefile):
+							line = line.strip()
+						        templates = line.split("_")
+							phidelta[tagseq[i-1], t1] += 1
+							phidelta[z[i-1], t2] -= 1
+
 					count += 1
 
                                 for w, v in phidelta.iteritems():
@@ -375,7 +400,7 @@ def genfeatures(filename):
 
 if __name__ == "__main__":
 
-	trainfile, devfile = sys.argv[1:3]
+	trainfile, devfile, featurefile = sys.argv[1:4]
     
 	dictionary, model, phi = mle(trainfile)
 
@@ -383,7 +408,7 @@ if __name__ == "__main__":
 	unavgPerceptron(dictionary, model, trainfile, devfile)
 
 	print "Averaged structured Perceptron:"
-	avgPerceptron(dictionary, model, trainfile, devfile)
+	avgPerceptron(dictionary, trainfile, devfile, featurefile)
 
 	print "Averaged structured Perceptron with Trigram t-2 t-1 t0:"
 	avgPerceptronTrigramFeatures(dictionary, trainfile, devfile)

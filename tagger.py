@@ -50,9 +50,10 @@ def mleTrigram(filename):
 
     tttfreq = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
     ttwfreq = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
-    twfreq = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+    twfreq = defaultdict(lambda: defaultdict(int))
     dictionary = defaultdict(set)
-    tagtagfreq = defaultdict(lambda: defaultdict(int)) 
+    tagtagfreq = defaultdict(lambda: defaultdict(int))
+    tagfreq = defaultdict(int)
 
     for words, tags in readfile(filename):
 
@@ -60,23 +61,46 @@ def mleTrigram(filename):
         last = startsym
         tagtagfreq[startsym][startsym] += 1
 
-        for word, tag in zip(words, tags) + ([stopsym, stopsym]):
+        for word, tag in zip(words, tags) + [(stopsym, stopsym)]:
 
             twfreq[tag][word] += 1
-            ttwfreq[last][tag][word] += 1
+            #ttfreq[last][tag] += 1
+            ttwfreq[lasttolast][last][word] += 1
             tttfreq[lasttolast][last][tag] += 1
             dictionary[word].add(tag)
             tagtagfreq[last][tag] += 1
+            tagfreq[tag] += 1
             lasttolast = last
             last = tag
 
     model = defaultdict(float)
     num_tags = len(tagtagfreq)
 
-    for tag1, tag2, freq in tagtagfreq.iteritems():
+    for tag1 in tagtagfreq:
+	for tag2 in tagtagfreq[tag1]:
+	        logfreq = log(tagtagfreq[tag1][tag2] + num_tags)
+		
+        
+		for t in tttfreq[tag1][tag2]:
+			logf = log(tttfreq[tag1][tag2][t] + 1)
+			model[tag1, tag2, t] = logf - logfreq
+
+			for word in ttwfreq[tag1][tag2]:
+			    #print("ttw: ", ttwfreq[tag1, tag2, word])
+			    logw = log(ttwfreq[tag1][tag2][word])
+			    model[tag1, tag2, word] = logw - logfreq
+
+    num_tags = len(tagfreq)
+
+    for tag, freq in tagfreq.iteritems(): 
         logfreq = log(freq)
-        for tag, word, fr in ttwfreq.iteritems():
-            model[tag, word]
+        for word, f in twfreq[tag].iteritems():
+            model[tag, word] = log(f) - logfreq 
+        logfreq2 = log(freq + num_tags)
+        for t in tagfreq: # all tags
+            model[tag, t] = log(tagtagfreq[tag][t] + 1) - logfreq2
+
+    return dictionary, model
 
 def decode(words, dictionary, model):
 
@@ -140,7 +164,7 @@ def decodetrigram1(words, dictionary, model):
 		for lasttolast in best[i-2]:
 			
 			#print(model['\p', prev, word])
-		        score = best[i-1][prev] + best[i-2][lasttolast]  + model[prev, tag] + model[tag, word] + model[lasttolast, prev, tag]  + model['\p', prev, word] + model['\pp', lasttolast, word] + model[tag, words[i-1], word] #+ model[prev, tag, word] #+ model['\w', tag, words[i-1]]  + model[lasttolast, prev, word] #	
+		        score = best[i-1][prev] + best[i-2][lasttolast]  + model[prev, tag] + model[tag, word]  + model['\p', prev, word] + model['\pp', lasttolast, word] + model[lasttolast, prev, tag] #+ model[tag, words[i-1], word] #+ model['\w-1', tag, words[i-1]]  # # + model[lasttolast, prev, word] + model['\pt', prev, tag, word] # + model['\w', tag, words[i-1]] # #  # + model['\p', prev, word]    #+ model[prev, tag, words[i-1], word] #  #+ model[prev, tag, word] #   #	 + model[lasttolast, prev, word]	 model['\ww', words[i-1], word]
 
 		        if score > best[i][tag]:
 		            best[i][tag] = score

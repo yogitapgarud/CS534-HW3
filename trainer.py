@@ -88,8 +88,12 @@ def unavgPerceptron(dictionary, filename, devfile, totalEpoch = 10):
                     #print "model : ", model
 
                 #features = sum(v != 0 for _, v in model.iteritems())
+		features = 0
+		for i, v in model.iteritems():
+			if v != 0:
+				features += 1
 
-                print "epoch %d, updates %d, |W| = %d, train_err %.2f%%, dev_err %.2f%%" % (currentEpoch, updates, len(model), train_err * 100, dev_err * 100)
+                print "epoch %d, updates %d, |W| = %d, train_err %.2f%%, dev_err %.2f%%" % (currentEpoch, updates, features, train_err * 100, dev_err * 100)
 
 	#endTime = time.time()
 	print("UnAverage Perceptron time : ", totalTime)
@@ -286,23 +290,15 @@ def avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile, totalEpo
 						#phidelta['\w', t1, w_seq[i-1]] += 1
 						#phidelta['\w', t2, w_seq[i-1]] -= 1
 
-						#phidelta[t1, w_seq[i-1], w] += 1
-						#phidelta[t2, w_seq[i-1], w] -= 1
+						phidelta[t1, w_seq[i-1], w] += 1
+						phidelta[t2, w_seq[i-1], w] -= 1
 
-						#if t1 != t2 or t_seq[i-1] != z[i-1]:
-
-						#for line in open(featurefile):
-						#   line = line.strip()
-						#   templates = line.split("_")
-						#phidelta[t_seq[i-1], t1] += 1
-						#phidelta[z[i-1], t2] -= 1
 
                                 for w, v in phidelta.iteritems():
-                                        model[w] += v			#phixy[count][w]
-					modelAvg[w] += countAvg * v	#phixy[count][w]
+                                        model[w] += v			
+					modelAvg[w] += countAvg * v	
 
 				updates += 1
-                                #print "updates: ", updates
 
 			countAvg += 1
 
@@ -318,85 +314,15 @@ def avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile, totalEpo
                     best_dev_err = dev_err
                     #print "model : ", model
 
-                features = sum(v != 0 for _, v in final_model.iteritems())
+                #features = sum(v != 0 for _, v in final_model.iteritems())
+		features = 0
+		for i, v in final_model.iteritems():
+			if v != 0:
+				features += 1
 
                 print("epoch {0}, updates {1}, features {2}, train_err {3:.2%}, dev_err {4:.2%}".format(currentEpoch, updates, features, train_err, dev_err))
 
 	return final_model
-
-def avgTrigram(dictionary, model, trainfile, devfile, totalEpoch = 10):
-	
-	currentEpoch = 1
-        best_dev_err = float("inf")
-	modelAvg = defaultdict(int)
-	countAvg = 1
-	final_model = defaultdict(int)
-	trainset = list(readfile(trainfile))
-	total = sum(map(lambda (x,y): len(x), trainset))
-
-	for currentEpoch in range(1, totalEpoch + 1):
-		
-		errorsentences = errors = tot = 0
-		updates = 0
-
-    		for words, tags in readfile(trainfile):
-
-			mytags = decodetrigram1(words, dictionary , final_model)
-
-			if tags != mytags:
-
-				errorsentences += 1
-                        	phidelta = defaultdict(float)
-				w_seq = [startsym] + words + [stopsym]
-				t_seq = [startsym] + tags + [stopsym]
-				z = [startsym] + mytags + [stopsym]
-
-		                for i, (w, t1, t2) in enumerate(zip(w_seq, t_seq, z)[1:], 1):
-
-					if t1 != t2:
-						phidelta[t1, w] += 1
-						phidelta[t2, w] -= 1
-
-						phidelta[t_seq[i-1], t1] += 1
-						phidelta[z[i-1], t2] -= 1
-
-						errors += 1
-						
-					if t1 != t2 or t_seq[i-1] != z[i-1] or t_seq[i-2] != z[i-2]:
-
-						phidelta[t_seq[i-2], t_seq[i-1], t1] += 1
-						phidelta[z[i-2], z[i-1], t2] -= 1
-
-						#phidelta[t_seq[i-1], t1, w] += 1
-						#phidelta[z[i-1], t2, w] -= 1
-
-						#phidelta[t_seq[i-1], w_seq[i-1], w] += 1
-						#phidelta[z[i-1], w_seq[i-1], w] -= 1
-			
-				for w, v in phidelta.iteritems():
-                                        model[w] += v			#phixy[count][w]
-					modelAvg[w] += countAvg * v	#phixy[count][w]
-
-				updates += 1
-                                #print "updates: ", updates
-
-			countAvg += 1
-
-                for w, v in model.iteritems():
-                    final_model[w] = model[w] - modelAvg[w] / countAvg        
-
-                dev_err = test(devfile, dictionary, modelAvg)
-
-                train_err = errors / total
-                #print(train_err)
-     
-                if dev_err < best_dev_err:
-                    best_dev_err = dev_err
-                    #print "model : ", model
-
-                features = sum(v != 0 for _, v in final_model.iteritems())
-
-                print("epoch {0}, updates {1}, features {2}, train_err {3:.2%}, dev_err {4:.2%}".format(currentEpoch, updates, features, train_err, dev_err))
 
 def avgPerceptronBivariant1(dictionary, model, trainfile, devfile, totalEpoch = 10):
 
@@ -440,10 +366,6 @@ def avgPerceptronBivariant1(dictionary, model, trainfile, devfile, totalEpoch = 
 						phidelta['\p', z[i-1], w] -= 1
 						errors += 1
 
-					#if i > 1 and (t1 != t2 or t_seq[i-1] != z[i-1] or t_seq[i-2] != z[i-2]):
-					#	phidelta[t_seq[i-2], w] += 1
-					#	phidelta[z[i-2], w] -= 1
-
                                 for w, v in phidelta.iteritems():
                                         model[w] += phidelta[w]
 					modelAvg[w] += countAvg * phidelta[w]
@@ -463,59 +385,15 @@ def avgPerceptronBivariant1(dictionary, model, trainfile, devfile, totalEpoch = 
                     best_dev_err = dev_err
                     #print "model : ", model
 
-                features = sum(v != 0 for _, v in final_model.iteritems())
+                #features = sum(v != 0 for _, v in final_model.iteritems())
+		features = 0
+		for i, v in final_model.iteritems():
+			if v != 0:
+				features += 1
 
                 print "epoch %d, updates %d, |W| = %d, train_err %.2f%%, dev_err %.2f%%" % (currentEpoch, updates, features, train_err * 100, dev_err * 100)
 
 	return final_model
-
-def genfeatures(filename):
-	#f = open('myfile', 'w+')
-	phixy = defaultdict(lambda : defaultdict(int))
-	phixz = defaultdict(lambda : defaultdict(int))
-
-	for words, tags in readfile(filename):
-
-		        mytags = decode(words, dictionary ,model)
-                        #print mytags
-                        last = 'DT'
-                        #phixz[startsym, last] = 1
-
-			count = 1
-
-                        for word, tag in zip(words, mytags):
-
-				if count == 1:
-					tagprev2 = last
-					last = tag
-
-				else:	
-					#f.write
-					phixz[count][tagprev2, last, tag] += 1
-					phixz[count][last, word, tag] += 1
-					tagprev2 = last
-					last = tag
-				count += 1
-
-                        last = 'DT'
-                        #phixy[startsym, last] += 1
-
-			count = 1
-                        for word, tag in zip(words, tags):
-
-                           	if count == 1:
-					tagprev2 = last
-					last = tag
-
-				else:	
-					#f.write
-					phixy[count][tagprev2, last, tag] += 1
-					phixy[count][last, word, tag] += 1
-					tagprev2 = last
-					last = tag
-				count += 1
-
-	return phixy
 
 if __name__ == "__main__":
 
@@ -524,18 +402,15 @@ if __name__ == "__main__":
 	dictionary, model = mle(trainfile)
 
 	#print "Unaveraged structured Perceptron: "
-	#unavgPerceptron(dictionary, trainfile, devfile)
+	unavgPerceptron(dictionary, trainfile, devfile)
 
-
-	#print(len(model))
 	#print "Averaged structured Perceptron:"
-        #avgPerceptron(dictionary, trainfile, devfile, featurefile)
+        avgPerceptron(dictionary, trainfile, devfile, featurefile)
 	#print(len(model))
 
 	#dictionary, model = mleTrigram(trainfile)
-	print "Averaged structured Perceptron with Trigram t-2 t-1 t0:"
+	print "Averaged structured Perceptron with Trigram t-2 t-1 t0 and t0 w-1 w0:"
 	avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile)
-	print(len(model))
 
 	print "Averaged structured Perceptron with Trigram t-2 t-1 t0:"
 	#avgTrigram(dictionary, model, trainfile, devfile)

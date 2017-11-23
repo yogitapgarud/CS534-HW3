@@ -10,7 +10,6 @@ from tagger import mle
 from tagger import readfile
 from tagger import test
 from tagger import decodetrigram1
-from tagger import decodetrigram2
 from mydict import myDefaultdict
 
 startsym, stopsym = "<s>", "</s>"
@@ -284,14 +283,14 @@ def avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile, totalEpo
 						phidelta['\p', t_seq[i-1], w] += 1
 						phidelta['\p', z[i-1], w] -= 1
 
-						phidelta['\pp', t_seq[i-2], w] += 1
-						phidelta['\pp', z[i-2], w] -= 1
+						#phidelta['\pp', t_seq[i-2], w] += 1
+						#phidelta['\pp', z[i-2], w] -= 1
 						
 						#phidelta['\w', t1, w_seq[i-1]] += 1
 						#phidelta['\w', t2, w_seq[i-1]] -= 1
 
-						phidelta[t1, w_seq[i-1], w] += 1
-						phidelta[t2, w_seq[i-1], w] -= 1
+						#phidelta[t1, w_seq[i-1], w] += 1
+						#phidelta[t2, w_seq[i-1], w] -= 1
 
 
                                 for w, v in phidelta.iteritems():
@@ -402,20 +401,20 @@ if __name__ == "__main__":
 	dictionary, model = mle(trainfile)
 
 	#print "Unaveraged structured Perceptron: "
-	unavgPerceptron(dictionary, trainfile, devfile)
+	#unavgPerceptron(dictionary, trainfile, devfile)
 
 	#print "Averaged structured Perceptron:"
-        avgPerceptron(dictionary, trainfile, devfile, featurefile)
+        #avgPerceptron(dictionary, trainfile, devfile, featurefile)
 	#print(len(model))
 
 	#dictionary, model = mleTrigram(trainfile)
-	print "Averaged structured Perceptron with Trigram t-2 t-1 t0 and t0 w-1 w0:"
+	print "Averaged structured Perceptron with Trigram best t-2 t-1 t0:"
 	avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile)
 
-	print "Averaged structured Perceptron with Trigram t-2 t-1 t0:"
+	#print "Averaged structured Perceptron with Trigram t-2 t-1 t0:"
 	#avgTrigram(dictionary, model, trainfile, devfile)
 
-	print "Averaged structured Perceptron with Bigram variatn with t-1 w:"
+	print "Averaged structured Perceptron with Bigram variant with t-1 w:"
 	avgPerceptronBivariant1(dictionary, model, trainfile, devfile)
 	#print "train_err {0:.2%}".format(test(trainfile, dictionary, model))
 	#print "dev_err {0:.2%}".format(test(devfile, dictionary, model))

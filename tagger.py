@@ -128,7 +128,6 @@ def decodetrigram1(words, dictionary, model):
     #for tag in dictionary[words[1]]:
 	#best[1][tag] = 1
 	#back[1][tag] = startsym
-    
 
     #print " ".join("%s/%s" % wordtag for wordtag in zip(words,tags)[1:-1])
 
@@ -141,7 +140,7 @@ def decodetrigram1(words, dictionary, model):
 		for lasttolast in best[i-2]:
 			
 			#print(model['\p', prev, word])
-		        score = best[i-1][prev] + best[i-2][lasttolast]  + model[prev, tag] + model[tag, word]  + model[lasttolast, prev, tag] + model[prev, tag, word] + model['\p', prev, word] + model[tag, words[i-1], word]
+		        score = best[i-1][prev] + best[i-2][lasttolast]  + model[prev, tag] + model[tag, word] + model[lasttolast, prev, tag] + model[prev, tag, word] + model['\p', prev, word] + model[tag, words[i-1], word]
 
 		        if score > best[i][tag]:
 		            best[i][tag] = score

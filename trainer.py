@@ -222,6 +222,7 @@ def avgPerceptron(dictionary, model, trainfile, devfile, featurefile, totalEpoch
         plt.xlabel('Epoch')
         plt.ylabel('Error Rate')
 	#plt.show()
+	return final_model
 
 def avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile, totalEpoch = 10):
 
@@ -268,8 +269,8 @@ def avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile, totalEpo
 						phidelta[tagseq[i-2], tagseq[i-1], t1] += 1
 						phidelta[z[i-2], z[i-1], t2] -= 1
 
-						phidelta[tagseq[i-1], t1, w] += 1
-						phidelta[z[i-1], t2, w] -= 1
+						#phidelta[tagseq[i-1], t1, w] += 1
+						#phidelta[z[i-1], t2, w] -= 1
 
 						phidelta['\p', tagseq[i-1], w] += 1
 						phidelta['\p', z[i-1], w] -= 1
@@ -309,7 +310,7 @@ def avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile, totalEpo
                 features = sum(v != 0 for _, v in final_model.iteritems())
 
                 print("epoch {0}, updates {1}, features {2}, train_err {3:.2%}, dev_err {4:.2%}".format(currentEpoch, updates, features, train_err, dev_err))
-                #print("train_err {0:.2%} dev_err {0:.2%}".format(errors / tot * 100, dev_err))
+	return final_model
 
 def avgTrigram(dictionary, model, trainfile, devfile, totalEpoch = 10):
 	
@@ -385,7 +386,7 @@ def avgTrigram(dictionary, model, trainfile, devfile, totalEpoch = 10):
 
                 print("epoch {0}, updates {1}, features {2}, train_err {3:.2%}, dev_err {4:.2%}".format(currentEpoch, updates, features, train_err, dev_err))
 
-def avgPerceptronBivariant1(dictionary, model, trainfile, devfile, totalEpoch = 10 ):
+def avgPerceptronBivariant1(dictionary, model, trainfile, devfile, totalEpoch = 10):
 
 	currentEpoch = 1
         best_dev_err = float("inf")
@@ -454,6 +455,8 @@ def avgPerceptronBivariant1(dictionary, model, trainfile, devfile, totalEpoch = 
 
                 print "epoch %d, updates %d, |W| = %d, train_err %.2f%%, dev_err %.2f%%" % (currentEpoch, updates, features, train_err * 100, dev_err * 100)
 
+	return final_model
+
 def genfeatures(filename):
 	#f = open('myfile', 'w+')
 	phixy = defaultdict(lambda : defaultdict(int))
@@ -512,13 +515,13 @@ if __name__ == "__main__":
 	#unavgPerceptron(dictionary, model, trainfile, devfile)
 
 	print "Averaged structured Perceptron:"
-        avgPerceptron(dictionary, model, trainfile, devfile, featurefile)
+        #avgPerceptron(dictionary, model, trainfile, devfile, featurefile)
 
 	print "Averaged structured Perceptron with Trigram t-2 t-1 t0:"
 	avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile)
 
 	print "Averaged structured Perceptron with Trigram t-2 t-1 t0:"
-	avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile)
+	avgTrigram(dictionary, model, trainfile, devfile)
 
 	print "Averaged structured Perceptron with Bigram variatn with t-1 w:"
 	avgPerceptronBivariant1(dictionary, model, trainfile, devfile)

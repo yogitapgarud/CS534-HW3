@@ -1,4 +1,2 @@
-tagseq[i-2], tagseq[i-1], tagseq[i]
-tagseq[i-1], tagseq[i], wordseq[i]
-t0_t-1_t-2
-t0_w-1_w+1
+t(-2, -1, 0)
+w(-1, 0)

@@ -98,7 +98,7 @@ def decode(words, dictionary, model):
             #print "tag ", tag, "for", word
             for prev in best[i-1]:
 		#print "prev : ", prev, "i - 1 : ", i - 1
-                score = best[i-1][prev] + model[prev, tag] + model[tag, word] #+ model[prev, word]
+                score = best[i-1][prev] + model[prev, tag] + model[tag, word] + model['\p', prev, word] + model['\w', words[i-1], word]
                 if score > best[i][tag]:
                     best[i][tag] = score
                     back[i][tag] = prev
@@ -110,7 +110,7 @@ def decode(words, dictionary, model):
     #print " ".join("%s/%s" % wordtag for wordtag in mywordtags)
     return mytags
 
-def decodetrigram(words, dictionary, model):
+def decodetrigram1(words, dictionary, model):
 
     def backtrack(i, tag):
         if i == 1:
@@ -140,7 +140,50 @@ def decodetrigram(words, dictionary, model):
 		#print "prev : ", prev, "i - 1 : ", i - 1
 		for lasttolast in best[i-2]:
 			
-		        score = best[i-1][prev] + best[i-2][lasttolast]  + model[prev, tag] + model[tag, word]  + model[lasttolast, prev, tag] + model[prev, words[i-1], word] + model[prev, tag, word] 
+			#print(model['\p', prev, word])
+		        score = best[i-1][prev] + best[i-2][lasttolast]  + model[prev, tag] + model[tag, word]  + model[lasttolast, prev, tag] + model[prev, tag, word] + model['\p', prev, word] + model[tag, words[i-1], word]
+
+		        if score > best[i][tag]:
+		            best[i][tag] = score
+		            back[i][tag] = prev
+
+    #   print i, word, dictionary[word], best[i]
+    #print best[len(words)-1][stopsym]
+    mytags = backtrack(len(words)-1, stopsym)[:-1]
+    #print "mytags : ", mytags
+    #print " ".join("%s/%s" % wordtag for wordtag in mywordtags)
+    return mytags
+
+def decodetrigram2(words, dictionary, model):
+
+    def backtrack(i, tag):
+        if i == 0:
+            return []
+        return backtrack(i-1, back[i][tag]) + [tag]
+
+    words = [startsym] + words + [stopsym]
+
+    best = defaultdict(lambda: defaultdict(lambda: float("-inf")))
+    best[0][startsym] = 1
+
+    back = defaultdict(dict)
+
+    for tag in dictionary[words[1]]:
+	best[1][tag] = 1
+	back[1][tag] = startsym
+    
+
+    #print " ".join("%s/%s" % wordtag for wordtag in zip(words,tags)[1:-1])
+
+    #print "sentence : ", words
+    for i, word in enumerate(words[2:], 2):
+        for tag in dictionary[word]:
+            #print "tag ", tag, "for", word
+            for prev in best[i-1]:
+		#print "prev : ", prev, "i - 1 : ", i - 1
+		for lasttolast in best[i-2]:
+			
+		        score = best[i-1][prev] + best[i-2][lasttolast]  + model[prev, tag] + model[tag, word]  + model[lasttolast, prev, tag]
 
 		        if score > best[i][tag]:
 		            best[i][tag] = score

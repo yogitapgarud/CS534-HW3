@@ -113,6 +113,7 @@ def avgPerceptron(dictionary, model, trainfile, devfile, featurefile, totalEpoch
 	totalTime = 0
 	epochs = []
         trainArr = []
+	avgtrainArr = []
         devArr = []
 	avgdevArr = []
 
@@ -186,9 +187,11 @@ def avgPerceptron(dictionary, model, trainfile, devfile, featurefile, totalEpoch
                 dev_err = test(devfile, dictionary, model)
                 avg_dev_err = test(devfile, dictionary, final_model)
                 train_err = errors / total
+		avg_train_err = test(trainfile, dictionary, final_model)
 
 		epochs.append(currentEpoch)
                 trainArr.append(train_err * 100)
+		avgtrainArr.append(avg_train_err * 100)
                 devArr.append(dev_err * 100)
                 avgdevArr.append(avg_dev_err * 100)
 
@@ -210,6 +213,7 @@ def avgPerceptron(dictionary, model, trainfile, devfile, featurefile, totalEpoch
 	print("Average Perceptron time : ", totalTime)
 
 	plt.plot(epochs, trainArr, label='Train Error')
+	plt.plot(epochs, avgtrainArr, label='Average Train Error')
         plt.plot(epochs, devArr, label='Dev Error')
         plt.plot(epochs, avgdevArr, label='Avg Dev Error')
         plt.title('Error Rates for Unaveraged and Averaged Perceptron')
@@ -327,11 +331,9 @@ def avgPerceptronBivariant1(dictionary, model, trainfile, devfile, totalEpoch = 
 		errorsentences = errors = tot = 0
 		updates = 0
 		count = 1
-		c = 0
 
     		for words, tags in readfile(trainfile):
 
-			c += 1 
                         mytags = decode(words, dictionary, final_model)
 
                         if tags != mytags:

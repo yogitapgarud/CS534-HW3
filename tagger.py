@@ -164,7 +164,7 @@ def decodetrigram1(words, dictionary, model):
 		for lasttolast in best[i-2]:
 			
 			#print(model['\p', prev, word])
-		        score = best[i-1][prev] + best[i-2][lasttolast]  + model[prev, tag] + model[tag, word]  + model['\p', prev, word]  + model[lasttolast, prev, tag] #+ model[tag, words[i-1], word] #+ model['\w-1', tag, words[i-1]]  # # + model[lasttolast, prev, word] + model['\pt', prev, tag, word] # + model['\w', tag, words[i-1]] # #  # + model['\p', prev, word]    #+ model[prev, tag, words[i-1], word] #  #+ model[prev, tag, word] #   #	 + model[lasttolast, prev, word]	 model['\ww', words[i-1], word]+ model['\pp', lasttolast, word]
+		        score = best[i-1][prev] + best[i-2][lasttolast]  + model[prev, tag] + model[tag, word]  + model['\p', prev, word] + model[lasttolast, prev, tag] #+ model[lasttolast, prev, word]  + model['\pt', prev, tag, word]  + model[lasttolast, prev, word] # #+ model['\w-1', tag, words[i-1]]  # #   # + model['\w', tag, words[i-1]] # #  # + model['\p', prev, word]    # #  #+ model[prev, tag, word] #   #	 	 model['\ww', words[i-1], word]+ model['\pp', lasttolast, word]	+ model[tag, words[i-1], word]
 
 		        if score > best[i][tag]:
 		            best[i][tag] = score

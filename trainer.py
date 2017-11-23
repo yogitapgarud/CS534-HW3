@@ -96,13 +96,13 @@ def unavgPerceptron(dictionary, filename, devfile, totalEpoch = 10):
 
 	#endTime = time.time()
 	print("UnAverage Perceptron time : ", totalTime)
-	plt.plot(epochs, trainArr, label='Train Error')
-        plt.plot(epochs, devArr, label='Dev Error')
-        plt.title('Error Rates for Unaveraged and Averaged Perceptron')
-        plt.legend()
-        plt.xlabel('Epoch')
-        plt.ylabel('Error Rate')
-	plt.show()
+	#plt.plot(epochs, trainArr, label='Train Error')
+        #plt.plot(epochs, devArr, label='Dev Error')
+        #plt.title('Error Rates for Unaveraged and Averaged Perceptron')
+        #plt.legend()
+       # plt.xlabel('Epoch')
+        #plt.ylabel('Error Rate')
+	#plt.show()
 
 def avgPerceptron(dictionary, trainfile, devfile, featurefile, totalEpoch = 10):
 
@@ -222,7 +222,7 @@ def avgPerceptron(dictionary, trainfile, devfile, featurefile, totalEpoch = 10):
 	plt.show()
 	return final_model
 
-def avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile, totalEpoch = 8):
+def avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile, totalEpoch = 10):
 
 	currentEpoch = 1
 	errors = 0
@@ -241,7 +241,7 @@ def avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile, totalEpo
 
     		for words, tags in readfile(trainfile):
 
-			mytags = decodetrigram1(words, dictionary , final_model)
+			mytags = decodetrigram1(words, dictionary, final_model)
 
 			if tags != mytags:
 
@@ -400,21 +400,22 @@ if __name__ == "__main__":
     
 	dictionary, model = mle(trainfile)
 
-	#print "Unaveraged structured Perceptron: "
-	#unavgPerceptron(dictionary, trainfile, devfile)
+	print "Unaveraged structured Perceptron: "
+	unavgPerceptron(dictionary, trainfile, devfile)
 
-	#print "Averaged structured Perceptron:"
-        #avgPerceptron(dictionary, trainfile, devfile, featurefile)
+	print "\n Averaged structured Perceptron:"
+        avgPerceptron(dictionary, trainfile, devfile, featurefile)
 	#print(len(model))
 
+	
 	#dictionary, model = mleTrigram(trainfile)
-	print "Averaged structured Perceptron with Trigram best t-2 t-1 t0:"
+	print "\n Averaged structured Perceptron with Trigram best t-2 t-1 t0:"
 	avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile)
 
 	#print "Averaged structured Perceptron with Trigram t-2 t-1 t0:"
 	#avgTrigram(dictionary, model, trainfile, devfile)
 
-	print "Averaged structured Perceptron with Bigram variant with t-1 w:"
+	print "\n Averaged structured Perceptron with Bigram variant with t-1 w:"
 	avgPerceptronBivariant1(dictionary, model, trainfile, devfile)
 	#print "train_err {0:.2%}".format(test(trainfile, dictionary, model))
 	#print "dev_err {0:.2%}".format(test(devfile, dictionary, model))

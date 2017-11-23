@@ -222,7 +222,7 @@ def avgPerceptron(dictionary, trainfile, devfile, featurefile, totalEpoch = 10):
 	plt.show()
 	return final_model
 
-def avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile, totalEpoch = 10):
+def avgPerceptronTrigramFeatures(dictionary, model, trainfile, devfile, totalEpoch = 8):
 
 	currentEpoch = 1
 	errors = 0
